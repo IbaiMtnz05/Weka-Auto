@@ -1,0 +1,5 @@
+python-weka-wrapper3
+pandas
+numpy
+matplotlib
+seaborn
