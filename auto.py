@@ -31,14 +31,14 @@ except ImportError:
 class ARFFClassifier:
     """Clase para clasificar archivos ARFF con múltiples algoritmos"""
     
-    def __init__(self, db2_path: str = "DB2"):
+    def __init__(self, db_path: str = "DB"):
         """
         Inicializar el clasificador
         
         Args:
-            db2_path: Ruta a la carpeta DB2 con archivos ARFF
+            db_path: Ruta a la carpeta DB con archivos ARFF
         """
-        self.db2_path = db2_path
+        self.db_path = db_path
         self.results = []
         
         # Inicializar JVM de Weka
@@ -56,8 +56,8 @@ class ARFFClassifier:
         
         # Carpetas donde buscar archivos ARFF
         search_folders = [
-            os.path.join(self.db2_path, "original"),
-            os.path.join(self.db2_path, "converted")
+            os.path.join(self.db_path, "original"),
+            os.path.join(self.db_path, "converted")
         ]
         
         for folder in search_folders:
@@ -71,13 +71,13 @@ class ARFFClassifier:
                 print(f"Carpeta no encontrada: {folder}")
         
         if not arff_files:
-            print(f"No se encontraron archivos ARFF en las carpetas original y converted de {self.db2_path}")
+            print(f"No se encontraron archivos ARFF en las carpetas original y converted de {self.db_path}")
             return []
         
         print(f"\nTotal encontrados: {len(arff_files)} archivos ARFF:")
         for file in sorted(arff_files):
-            # Mostrar ruta relativa desde DB2 para mejor legibilidad
-            rel_path = os.path.relpath(file, self.db2_path)
+            # Mostrar ruta relativa desde DB para mejor legibilidad
+            rel_path = os.path.relpath(file, self.db_path)
             print(f"  - {rel_path}")
         
         return sorted(arff_files)
@@ -133,11 +133,6 @@ class ARFFClassifier:
         classifiers["1-NN Simple"] = {
             'classname': "weka.classifiers.lazy.IBk",
             'options': ["-K", "1"]
-        }
-        
-        classifiers["1-NN Weighted"] = {
-            'classname': "weka.classifiers.lazy.IBk",
-            'options': ["-K", "1", "-I"]
         }
         
         classifiers["3-NN Simple"] = {
@@ -205,6 +200,12 @@ class ARFFClassifier:
         classifiers["SimpleLogistic"] = {
             'classname': "weka.classifiers.functions.SimpleLogistic",
             'options': ["-I", "0", "-M", "500", "-H", "50", "-W", "0.0"]
+        }
+        
+        # SMO (Support Vector Machine)
+        classifiers["SMO"] = {
+            'classname': "weka.classifiers.functions.SMO",
+            'options': ["-C", "1.0", "-L", "0.001", "-P", "1.0E-12", "-N", "0", "-V", "-1", "-W", "1", "-K", "weka.classifiers.functions.supportVector.PolyKernel -E 1.0 -C 250007"]
         }
         
         return classifiers
@@ -326,7 +327,7 @@ class ARFFClassifier:
         # Procesar cada archivo ARFF
         for arff_file in arff_files:
             # Crear nombre descriptivo del dataset con la ruta relativa
-            rel_path = os.path.relpath(arff_file, self.db2_path)
+            rel_path = os.path.relpath(arff_file, self.db_path)
             dataset_name = rel_path.replace('.arff', '').replace(os.sep, '_')
             print(f"Procesando: {rel_path}")
             
